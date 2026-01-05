@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Question, GameSettings, MascotState } from '../types';
 import confetti from 'canvas-confetti';
 import InteractiveMascot from './InteractiveMascot';
@@ -13,6 +13,12 @@ interface GameBoardProps {
   onReturnToHome: () => void;
 }
 
+const SpeakerIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+    </svg>
+);
+
 const GameBoard: React.FC<GameBoardProps> = ({ questions, settings, onGameEnd, onReturnToHome }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -25,6 +31,32 @@ const GameBoard: React.FC<GameBoardProps> = ({ questions, settings, onGameEnd, o
 
   const currentQuestion = questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
+
+  // Detect which part of the quiz is Spanish based on the question text pattern
+  const isQuestionSpanish = useMemo(() => currentQuestion.question.includes('Spanish word "'), [currentQuestion]);
+  const areOptionsSpanish = useMemo(() => currentQuestion.question.includes('Spanish word or phrase'), [currentQuestion]);
+
+  // Extract the specific Spanish term from the question if applicable
+  const questionSpanishTerm = useMemo(() => {
+    const match = currentQuestion.question.match(/"([^"]+)"/);
+    return match ? match[1] : null;
+  }, [currentQuestion]);
+
+  const handleSpeak = (e: React.MouseEvent, textToSpeak: string) => {
+    e.stopPropagation();
+    playSound('click');
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      const voices = window.speechSynthesis.getVoices();
+      const spanishVoice = voices.find(voice => voice.lang.includes('es'));
+      if (spanishVoice) {
+          utterance.voice = spanishVoice;
+      }
+      utterance.lang = 'es-ES'; 
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    }
+  };
 
   const showCommentary = (message: string, duration: number = 4000) => {
     setMascotMessage(message);
@@ -187,8 +219,17 @@ const GameBoard: React.FC<GameBoardProps> = ({ questions, settings, onGameEnd, o
         )}
         
         <div key={currentQuestionIndex} className="animate-fade-in-down">
-            <div className="bg-dark-brown/5 dark:bg-slate-900/50 p-6 rounded-2xl mb-8 min-h-[100px] flex items-center justify-center">
+            <div className="bg-dark-brown/5 dark:bg-slate-900/50 p-6 rounded-2xl mb-8 min-h-[100px] flex items-center justify-center relative">
                 <h2 className="text-2xl font-semibold text-center">{currentQuestion.question}</h2>
+                {isQuestionSpanish && questionSpanishTerm && (
+                  <button 
+                    onClick={(e) => handleSpeak(e, questionSpanishTerm)}
+                    className="absolute right-4 p-2 rounded-full bg-mustard/20 hover:bg-mustard/40 text-mustard transition-colors shadow-sm"
+                    aria-label="Escuchar palabra"
+                  >
+                    <SpeakerIcon />
+                  </button>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -198,20 +239,49 @@ const GameBoard: React.FC<GameBoardProps> = ({ questions, settings, onGameEnd, o
                     data-option={option}
                     onClick={() => handleSelectOption(option)}
                     disabled={isAnswered}
-                    className={`w-full p-4 rounded-2xl text-lg font-semibold text-left transition-all duration-300 ${isAnswered ? 'cursor-default' : 'transform hover:scale-110'} ${getButtonClass(option)}`}
+                    className={`group relative w-full p-4 rounded-2xl text-lg font-semibold text-left transition-all duration-300 ${isAnswered ? 'cursor-default' : 'transform hover:scale-105'} ${getButtonClass(option)}`}
                 >
-                    {option}
+                    <span className="pr-10">{option}</span>
+                    {areOptionsSpanish && (
+                      <div 
+                        onClick={(e) => handleSpeak(e, option)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/20 hover:bg-white/40 text-inherit transition-all opacity-0 group-hover:opacity-100"
+                        aria-label="Escuchar opción"
+                      >
+                        <SpeakerIcon />
+                      </div>
+                    )}
                 </button>
                 ))}
             </div>
             
             <div className="mt-8 min-h-[150px]">
                 {isAnswered && (
-                <div className="p-4 bg-teal/10 dark:bg-teal/20 rounded-2xl animate-fade-in mb-6">
+                <div className="p-4 bg-teal/10 dark:bg-teal/20 rounded-2xl animate-fade-in mb-6 relative">
                     <h3 className="font-bold text-teal text-lg">
                         {selectedAnswer === null ? "¡Tiempo! (Time Up)" : "Aprendizaje (Learning Tip):"}
                     </h3>
                     <p className="whitespace-pre-wrap text-dark-brown dark:text-cream leading-relaxed">{currentQuestion.explanation}</p>
+                    
+                    {/* Add TTS for the explanation term if found */}
+                    {areOptionsSpanish && (
+                       <button 
+                         onClick={(e) => handleSpeak(e, currentQuestion.correctAnswer)}
+                         className="absolute top-4 right-4 p-2 rounded-full bg-teal/20 hover:bg-teal/40 text-teal transition-colors"
+                         aria-label="Escuchar respuesta correcta"
+                       >
+                         <SpeakerIcon />
+                       </button>
+                    )}
+                    {isQuestionSpanish && questionSpanishTerm && (
+                       <button 
+                         onClick={(e) => handleSpeak(e, questionSpanishTerm)}
+                         className="absolute top-4 right-4 p-2 rounded-full bg-teal/20 hover:bg-teal/40 text-teal transition-colors"
+                         aria-label="Escuchar término original"
+                       >
+                         <SpeakerIcon />
+                       </button>
+                    )}
                 </div>
                 )}
                 <div className="flex justify-end pt-2">
