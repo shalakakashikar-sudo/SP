@@ -81,6 +81,7 @@ const RoamingMascot: React.FC<RoamingMascotProps> = ({ onPositionChange }) => {
                 className="w-20 h-20 md:w-28 md:h-28 drop-shadow-2xl" 
                 bubblePlacement={bubblePos}
                 variant="cat"
+                mascotName="Mia"
                 baseState="default" 
                 selfPosition={position}
                 lookAt={centralMascotPos}

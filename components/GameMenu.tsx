@@ -105,6 +105,7 @@ const GameMenu: React.FC<GameMenuProps> = ({ onStartGame, userProgress, onNaviga
             baseState="default" 
             className="w-32 h-32" 
             variant="cat"
+            mascotName="Leo"
             lookAt={roamingMascotPosition}
             selfPosition={{ x: 50, y: 15 }} 
           />

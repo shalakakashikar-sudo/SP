@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Mascot from './Mascot';
 import MascotCommentary from './MascotCommentary';
 import { MascotState, Coordinates } from '../types';
-import { interactiveReactions } from '../database/mascotComments';
+import { leoReactions, miaReactions } from '../database/mascotComments';
 import { playSound } from '../utils/audio';
 
 interface InteractiveMascotProps {
@@ -16,6 +16,7 @@ interface InteractiveMascotProps {
   lookAt?: Coordinates | null;
   selfPosition?: Coordinates;
   bodyColor?: string;
+  mascotName?: 'Leo' | 'Mia';
 }
 
 const InteractiveMascot: React.FC<InteractiveMascotProps> = ({
@@ -27,7 +28,8 @@ const InteractiveMascot: React.FC<InteractiveMascotProps> = ({
   variant = 'blob',
   lookAt = null,
   selfPosition,
-  bodyColor
+  bodyColor,
+  mascotName = 'Leo'
 }) => {
   const [overrideState, setOverrideState] = useState<MascotState | null>(null);
   const [overrideMessage, setOverrideMessage] = useState<string | null>(null);
@@ -55,8 +57,11 @@ const InteractiveMascot: React.FC<InteractiveMascotProps> = ({
   useEffect(() => {
       const promptInterval = setInterval(() => {
           const isIdle = !overrideMessage && !message && !isOverrideVisible && !isMessageVisible;
-          if (isIdle && Math.random() > 0.7) {
-              setOverrideMessage("¡Vamos a aprender! (Let's learn!)");
+          if (isIdle && Math.random() > 0.8) {
+              const idleMsg = mascotName === 'Leo' 
+                  ? "¡Vamos a aprender! (Let's learn!)" 
+                  : "¡Me encanta jugar! (I love playing!)";
+              setOverrideMessage(idleMsg);
               setIsOverrideVisible(true);
               
               setTimeout(() => {
@@ -64,17 +69,21 @@ const InteractiveMascot: React.FC<InteractiveMascotProps> = ({
                   setTimeout(() => setOverrideMessage(null), 300); 
               }, 5000);
           }
-      }, 10000);
+      }, 15000);
       return () => clearInterval(promptInterval);
-  }, [overrideMessage, message, isOverrideVisible, isMessageVisible]);
+  }, [overrideMessage, message, isOverrideVisible, isMessageVisible, mascotName]);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation(); 
     playSound('click');
-    const reaction = interactiveReactions[Math.floor(Math.random() * interactiveReactions.length)];
+    
+    const reactionPool = mascotName === 'Mia' ? miaReactions : leoReactions;
+    const reaction = reactionPool[Math.floor(Math.random() * reactionPool.length)];
+    
     setOverrideState(reaction.state);
     setOverrideMessage(reaction.text);
     setIsOverrideVisible(true);
+    
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = window.setTimeout(() => {
       setOverrideState(null);
@@ -90,7 +99,6 @@ const InteractiveMascot: React.FC<InteractiveMascotProps> = ({
   const displayMessage = overrideMessage || message || '';
   const isVisible = isOverrideVisible || isMessageVisible;
 
-  // (Keeping Bubble Logic)
   const getBubblePositionClasses = () => {
       const baseClasses = "pointer-events-none absolute z-50 w-max transition-all duration-300";
       switch (bubblePlacement) {
