@@ -22,13 +22,13 @@ export interface WordOfTheDayData {
 export interface QuoteOfTheDayData {
   quote: string;
   author: string;
-  translation: string; // Added translation
+  translation: string;
 }
 
 export interface Quote {
   quote: string;
   author: string;
-  translation?: string; // Added optional translation for database
+  translation?: string;
 }
 
 export interface FlashcardData {
@@ -76,7 +76,6 @@ export type Difficulty = 'Easy' | 'Medium' | 'Hard' | 'Exam';
 
 export const difficulties: Difficulty[] = ['Easy', 'Medium', 'Hard', 'Exam'];
 
-// Expanded Topics list including new categories
 export const topics = [
     'Vocabulary', 
     'Idioms', 
@@ -103,16 +102,20 @@ export interface Word {
   synonyms: string[];
   antonyms: string[];
   example: string;
+  exampleTranslation?: string; // New field for example translation
   difficulty: Difficulty;
   etymology?: string; 
-  category?: string; // New field for specific topic filtering
+  category?: string;
+  learningTip?: string;
 }
 
 export interface Idiom {
   term: string;
   definition: string;
   example: string;
+  exampleTranslation?: string; // New field for example translation
   difficulty: Difficulty;
+  learningTip?: string;
 }
 
 export interface GrammarQuestion {
@@ -123,7 +126,6 @@ export interface GrammarQuestion {
   difficulty: Difficulty;
 }
 
-// Types for Word Detective Game
 export interface WordDetectiveSettings {
   topic: 'Words' | 'Idioms';
   difficulty: Difficulty;
@@ -138,13 +140,12 @@ export interface WordDetectivePuzzle {
   topic: 'Words' | 'Idioms';
 }
 
-// Types for Crossword Game
 export interface CrosswordSettings {
   difficulty: Difficulty;
   timerDuration: number;
 }
 
-export const crosswordTimeLimits = [0, 2, 5, 10]; // 0 means no timer
+export const crosswordTimeLimits = [0, 2, 5, 10];
 
 export interface CrosswordClue {
   num: number;
@@ -165,7 +166,6 @@ export interface CrosswordPuzzle {
   };
 }
 
-// Types for Mind Match (Memory) Game
 export interface MemoryMatchSettings {
   difficulty: Difficulty;
   topic: 'Vocabulary' | 'Idioms';
@@ -180,7 +180,6 @@ export interface MemoryCard {
   isMatched: boolean;
 }
 
-// Types for Word Scramble Game
 export interface WordScrambleSettings {
   topic: 'Vocabulary' | 'Idioms';
   difficulty: Difficulty;

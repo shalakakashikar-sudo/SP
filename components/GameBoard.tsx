@@ -141,7 +141,6 @@ const GameBoard: React.FC<GameBoardProps> = ({ questions, settings, onGameEnd, o
   return (
     <div className="bg-white/10 backdrop-blur-sm shadow-2xl rounded-3xl p-8 md:p-12 border-2 border-dark-brown/20 dark:bg-slate-800/50 dark:border-cream/20 relative mt-24">
       
-      {/* Absolute container for mascot, centered at top, ensuring z-index allows clicks */}
       <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-full flex justify-center z-30">
         <div className="pointer-events-auto">
             <InteractiveMascot 
@@ -149,6 +148,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ questions, settings, onGameEnd, o
                 message={mascotMessage}
                 isMessageVisible={isCommentaryVisible}
                 className="w-32 h-32 md:w-36 md:h-36"
+                variant="cat"
             />
         </div>
       </div>
@@ -209,9 +209,9 @@ const GameBoard: React.FC<GameBoardProps> = ({ questions, settings, onGameEnd, o
                 {isAnswered && (
                 <div className="p-4 bg-teal/10 dark:bg-teal/20 rounded-2xl animate-fade-in mb-6">
                     <h3 className="font-bold text-teal text-lg">
-                        {selectedAnswer === null ? "¡Tiempo!" : "Explicación:"}
+                        {selectedAnswer === null ? "¡Tiempo! (Time Up)" : "Aprendizaje (Learning Tip):"}
                     </h3>
-                    <p className="whitespace-pre-wrap">{currentQuestion.explanation}</p>
+                    <p className="whitespace-pre-wrap text-dark-brown dark:text-cream leading-relaxed">{currentQuestion.explanation}</p>
                 </div>
                 )}
                 <div className="flex justify-end pt-2">
@@ -221,14 +221,14 @@ const GameBoard: React.FC<GameBoardProps> = ({ questions, settings, onGameEnd, o
                     disabled={!selectedAnswer}
                     className="bg-mustard text-dark-brown font-bold py-3 px-8 rounded-2xl text-lg shadow-lg hover:bg-mustard/90 transform hover:-translate-y-1 transition-all duration-200 ease-in-out focus:outline-none focus:ring-4 focus:ring-mustard/50 disabled:bg-gray-400 dark:disabled:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                     >
-                    Enviar
+                    Enviar (Submit)
                     </button>
                 ) : (
                     <button
                     onClick={handleNextQuestion}
                     className="bg-teal text-white font-bold py-3 px-8 rounded-2xl text-lg shadow-lg hover:bg-teal/90 transform hover:-translate-y-1 transition-all duration-200 ease-in-out focus:outline-none focus:ring-4 focus:ring-teal/50 animate-fade-in"
                     >
-                    {isLastQuestion ? 'Terminar' : 'Siguiente'}
+                    {isLastQuestion ? 'Terminar (Finish)' : 'Siguiente (Next)'}
                     </button>
                 )}
                 </div>
